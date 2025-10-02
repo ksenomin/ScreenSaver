@@ -3,8 +3,10 @@
     public partial class MainForm : Form
     {
         private List<Snowflake> snowflakes = new List<Snowflake>();
+
         private Random random = new Random();
         private System.Windows.Forms.Timer timer;
+
         private Image background;
         private Image snowflakeImage;
         private Bitmap sceneBuffer;
@@ -38,19 +40,28 @@
             }
         }
 
+        /// <summary>
+        /// Инициализация буфера
+        /// </summary>
         private void InitializeSceneBuffer()
         {
             sceneBuffer = new Bitmap(Width, Height);
         }
 
+        /// <summary>
+        /// Инициализация всех снежинок
+        /// </summary>
         private void InitializeSnowflakes()
         {
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 130; i++)
             {
                 AddSnowflake(true);
             }
         }
 
+        /// <summary>
+        /// Создание снежинок, задает размер и скорость
+        /// </summary>
         private void AddSnowflake(bool initial = false)
         {
             var snowflake = new Snowflake();
@@ -89,6 +100,9 @@
             snowflakes.Add(snowflake);
         }
 
+        /// <summary>
+        /// Начало движения
+        /// </summary>
         private void StartSnowfall()
         {
             timer = new System.Windows.Forms.Timer();
@@ -118,6 +132,9 @@
             }
         }
 
+        /// <summary>
+        /// Загрузка картинки в буфер
+        /// </summary>
         private void DrawToBuffer()
         {
             using (var sceneGraphics = Graphics.FromImage(sceneBuffer))
@@ -132,6 +149,7 @@
                 }
             }
 
+            // выгрузка
             using (var formGraphics = CreateGraphics())
             {
                 formGraphics.DrawImage(sceneBuffer, 0, 0);
@@ -153,6 +171,9 @@
             InitializeSnowflakes();
         }
 
+        /// <summary>
+        /// Закрытите формы при нажатии на любую клавишу
+        /// </summary>
         protected override void OnKeyDown(KeyEventArgs e)
         {
                 Close();
