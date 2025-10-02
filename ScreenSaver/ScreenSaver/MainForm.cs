@@ -77,7 +77,7 @@ namespace ScreenSaver
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка загрузки изображений из ресурсов:\n{ex.Message}",
+                MessageBox.Show($"Ошибка загрузки изображений из ресурсов:\n{ex.Message}", 
                     "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Environment.Exit(1);
             }
@@ -225,7 +225,5 @@ namespace ScreenSaver
         {
             Close();
         }
-
-   
     }
 }

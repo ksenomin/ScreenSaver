@@ -17,6 +17,17 @@
             {
                 components.Dispose();
             }
+
+            if (disposing)
+            {
+                timer?.Stop();
+                timer?.Dispose();
+                background?.Dispose();
+                snowflakeImage?.Dispose();
+                bufferBitmap?.Dispose();
+                bufferGraphics?.Dispose();
+            }
+
             base.Dispose(disposing);
         }
 
