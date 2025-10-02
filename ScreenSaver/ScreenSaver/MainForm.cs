@@ -9,6 +9,9 @@
         private Image snowflakeImage;
         private Bitmap sceneBuffer;
 
+        /// <summary>
+        /// Главная форма
+        /// </summary>
         public MainForm()
         {
             InitializeComponent();
@@ -69,7 +72,7 @@
             {
                 // большие 
                 snowflake.Size = random.Next(50, 70);
-                snowflake.Speed = random.Next(5, 8);
+                snowflake.Speed = random.Next(12, 15);
             }
 
             if (initial)
@@ -129,7 +132,6 @@
                 }
             }
 
-            // Отрисовываем сцену на форму
             using (var formGraphics = CreateGraphics())
             {
                 formGraphics.DrawImage(sceneBuffer, 0, 0);
@@ -146,20 +148,14 @@
             }
             InitializeSceneBuffer();
 
-            // Пересоздаем снежинки при изменении размера
+            // пересоздает снежинки при изменении размера
             snowflakes.Clear();
             InitializeSnowflakes();
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Escape)
                 Close();
-        }
-
-        protected override void OnMouseClick(MouseEventArgs e)
-        {
-            Close();
         }
     }
 }
