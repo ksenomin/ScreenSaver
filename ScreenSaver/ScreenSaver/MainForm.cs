@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Windows.Forms;
-
-namespace ScreenSaver
+﻿namespace ScreenSaver
 {
     public partial class MainForm : Form
     {
@@ -14,78 +7,39 @@ namespace ScreenSaver
         private System.Windows.Forms.Timer timer;
         private Image background;
         private Image snowflakeImage;
+        private Bitmap sceneBuffer;
 
-        private Bitmap bufferBitmap;
-        private Graphics bufferGraphics;
-
-        /// <summary>
-        /// Главная форма 
-        /// </summary>
         public MainForm()
         {
             InitializeComponent();
-            InitializeForm();
             LoadImages();
-            InitializeBuffer();
+            InitializeSceneBuffer();
             InitializeSnowflakes();
             StartSnowfall();
         }
 
-        private void InitializeForm()
-        {
-            this.WindowState = FormWindowState.Maximized;
-            this.FormBorderStyle = FormBorderStyle.None;
-            this.BackColor = Color.Black;
-            this.SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
-        }
-
-        private void InitializeBuffer()
-        {
-            // для буферизации
-            bufferBitmap = new Bitmap(Width, Height);
-            bufferGraphics = Graphics.FromImage(bufferBitmap);
-        }
-
-        /// <summary>
-        /// Загрузка изображений из ресурсов
-        /// </summary>
         private void LoadImages()
         {
             try
             {
-                // Преобразуем byte[] в Image
-                if (Properties.Resources.CountryHouse != null)
-                {
-                    using (var ms = new MemoryStream(Properties.Resources.CountryHouse))
-                    {
-                        background = Image.FromStream(ms);
-                    }
-                }
+                using (var ms = new MemoryStream(Properties.Resources.CountryHouse))
+                    background = Image.FromStream(ms);
 
-                if (Properties.Resources.Snowflake != null)
-                {
-                    using (var ms = new MemoryStream(Properties.Resources.Snowflake))
-                    {
-                        snowflakeImage = Image.FromStream(ms);
-                    }
-                }
-
-                if (background == null)
-                    throw new Exception("Не удалось загрузить CountryHouse из ресурсов");
-                if (snowflakeImage == null)
-                    throw new Exception("Не удалось загрузить Snowflake из ресурсов");
+                using (var ms = new MemoryStream(Properties.Resources.Snowflake))
+                    snowflakeImage = Image.FromStream(ms);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка загрузки изображений из ресурсов:\n{ex.Message}", 
-                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Ошибка загрузки изображений: {ex.Message}");
                 Environment.Exit(1);
             }
         }
 
-        /// <summary>
-        /// Инициализация всех снежинок
-        /// </summary>
+        private void InitializeSceneBuffer()
+        {
+            sceneBuffer = new Bitmap(Width, Height);
+        }
+
         private void InitializeSnowflakes()
         {
             for (int i = 0; i < 100; i++)
@@ -94,9 +48,6 @@ namespace ScreenSaver
             }
         }
 
-        /// <summary>
-        /// Создание снежинок
-        /// </summary>
         private void AddSnowflake(bool initial = false)
         {
             var snowflake = new Snowflake();
@@ -110,21 +61,21 @@ namespace ScreenSaver
             }
             else if (sizeType == 1)
             {
-                // средние 
+                // средние
                 snowflake.Size = random.Next(20, 30);
                 snowflake.Speed = random.Next(3, 6);
             }
             else
             {
-                // большие
-                snowflake.Size = random.Next(30, 40);
+                // большие 
+                snowflake.Size = random.Next(50, 70);
                 snowflake.Speed = random.Next(5, 8);
             }
 
             if (initial)
             {
                 snowflake.X = random.Next(0, Width);
-                snowflake.Y = random.Next(-500, -snowflake.Size);
+                snowflake.Y = random.Next(-200, -snowflake.Size);
             }
             else
             {
@@ -135,13 +86,10 @@ namespace ScreenSaver
             snowflakes.Add(snowflake);
         }
 
-        /// <summary>
-        /// Запуск снегопада
-        /// </summary>
         private void StartSnowfall()
         {
             timer = new System.Windows.Forms.Timer();
-            timer.Interval = 30;
+            timer.Interval = 50;
             timer.Tick += Timer_Tick;
             timer.Start();
         }
@@ -154,13 +102,11 @@ namespace ScreenSaver
 
         private void UpdateAnimation()
         {
-            // обновление позиций снежинок
             for (int i = snowflakes.Count - 1; i >= 0; i--)
             {
                 var snow = snowflakes[i];
                 snow.Y += snow.Speed;
 
-                // создание снежинки после выпадания
                 if (snow.Y > Height)
                 {
                     snowflakes.RemoveAt(i);
@@ -171,35 +117,22 @@ namespace ScreenSaver
 
         private void DrawToBuffer()
         {
-            bufferGraphics.Clear(Color.Black);
-
-            // фон
-            if (background != null)
+            using (var sceneGraphics = Graphics.FromImage(sceneBuffer))
             {
-                bufferGraphics.DrawImage(background, 0, 0, Width, Height);
-            }
+                // фон
+                sceneGraphics.DrawImage(background, 0, 0, Width, Height);
 
-            // снежинки рисуем
-            if (snowflakeImage != null)
-            {
+                // снежинки
                 foreach (var snow in snowflakes)
                 {
-                    bufferGraphics.DrawImage(snowflakeImage, snow.X, snow.Y, snow.Size, snow.Size);
+                    sceneGraphics.DrawImage(snowflakeImage, snow.X, snow.Y, snow.Size, snow.Size);
                 }
             }
 
-            // Принудительно вызываем перерисовку формы
-            this.Invalidate();
-        }
-
-        /// <summary>
-        /// Отрисовывает содержание буфера на форму
-        /// </summary>
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            if (bufferBitmap != null)
+            // Отрисовываем сцену на форму
+            using (var formGraphics = CreateGraphics())
             {
-                e.Graphics.DrawImage(bufferBitmap, 0, 0);
+                formGraphics.DrawImage(sceneBuffer, 0, 0);
             }
         }
 
@@ -207,12 +140,15 @@ namespace ScreenSaver
         {
             base.OnResize(e);
 
-            if (bufferBitmap != null)
+            if (sceneBuffer != null)
             {
-                bufferBitmap.Dispose();
-                bufferGraphics.Dispose();
+                sceneBuffer.Dispose();
             }
-            InitializeBuffer();
+            InitializeSceneBuffer();
+
+            // Пересоздаем снежинки при изменении размера
+            snowflakes.Clear();
+            InitializeSnowflakes();
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
