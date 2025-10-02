@@ -7,9 +7,9 @@
         private Random random = new Random();
         private System.Windows.Forms.Timer timer;
 
-        private Image background;
+        private Image backgroundImage;
         private Image snowflakeImage;
-        private Bitmap sceneBuffer;
+        private Bitmap imageBuffer;
 
         /// <summary>
         /// Главная форма
@@ -18,7 +18,7 @@
         {
             InitializeComponent();
             LoadImages();
-            InitializeSceneBuffer();
+            InitializeImageBuffer();
             InitializeSnowflakes();
             StartSnowfall();
         }
@@ -28,7 +28,7 @@
             try
             {
                 using (var ms = new MemoryStream(Properties.Resources.CountryHouse))
-                    background = Image.FromStream(ms);
+                    backgroundImage = Image.FromStream(ms);
 
                 using (var ms = new MemoryStream(Properties.Resources.Snowflake))
                     snowflakeImage = Image.FromStream(ms);
@@ -43,9 +43,9 @@
         /// <summary>
         /// Инициализация буфера
         /// </summary>
-        private void InitializeSceneBuffer()
+        private void InitializeImageBuffer()
         {
-            sceneBuffer = new Bitmap(Width, Height);
+            imageBuffer = new Bitmap(Width, Height);
         }
 
         /// <summary>
@@ -121,10 +121,10 @@
         {
             for (int i = snowflakes.Count - 1; i >= 0; i--)
             {
-                var snow = snowflakes[i];
-                snow.Y += snow.Speed;
+                var snowFall = snowflakes[i];
+                snowFall.Y += snowFall.Speed;
 
-                if (snow.Y > Height)
+                if (snowFall.Y > Height)
                 {
                     snowflakes.RemoveAt(i);
                     AddSnowflake();
@@ -137,10 +137,10 @@
         /// </summary>
         private void DrawToBuffer()
         {
-            using (var sceneGraphics = Graphics.FromImage(sceneBuffer))
+            using (var sceneGraphics = Graphics.FromImage(imageBuffer))
             {
                 // фон
-                sceneGraphics.DrawImage(background, 0, 0, Width, Height);
+                sceneGraphics.DrawImage(backgroundImage, 0, 0, Width, Height);
 
                 // снежинки
                 foreach (var snow in snowflakes)
@@ -152,7 +152,7 @@
             // выгрузка
             using (var formGraphics = CreateGraphics())
             {
-                formGraphics.DrawImage(sceneBuffer, 0, 0);
+                formGraphics.DrawImage(imageBuffer, 0, 0);
             }
         }
 
@@ -160,11 +160,11 @@
         {
             base.OnResize(e);
 
-            if (sceneBuffer != null)
+            if (imageBuffer != null)
             {
-                sceneBuffer.Dispose();
+                imageBuffer.Dispose();
             }
-            InitializeSceneBuffer();
+            InitializeImageBuffer();
 
             // пересоздает снежинки при изменении размера
             snowflakes.Clear();

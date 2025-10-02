@@ -22,7 +22,7 @@
             {
                 timer?.Stop();
                 timer?.Dispose();
-                background?.Dispose();
+                backgroundImage?.Dispose();
                 snowflakeImage?.Dispose();
             }
 
